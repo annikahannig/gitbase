@@ -93,7 +93,17 @@ func NewRepository(path string) (*Repository, error) {
 	gitRepo, err := git.PlainOpen(path)
 	if err != nil {
 		log.Println("Initializing repository:", path)
+		err = repositoryCanInitialize(path)
+		if err != nil {
+			// Path exists, but we can not initialize
+			return nil, err
+		}
 
+		// Initialize git repo
+		gitRepo, err = git.PlainInit(path, false)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	repo := &Repository{
