@@ -3,9 +3,11 @@ package gitbase
 import (
 	"errors"
 	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	_ "io/ioutil"
 	"log"
 	"os"
+	"sync"
 )
 
 /*
@@ -49,7 +51,10 @@ var (
 )
 
 type Repository struct {
-	basePath string
+	sync.RWMutex
+
+	BasePath string
+	Worktree *git.Worktree
 
 	gitRepo *git.Repository
 }
@@ -106,10 +111,49 @@ func NewRepository(path string) (*Repository, error) {
 		}
 	}
 
+	// Open worktree
+	worktree, err := gitRepo.Worktree()
+	if err != nil {
+		return nil, err
+	}
+
 	repo := &Repository{
-		basePath: path,
+		BasePath: path,
+		Worktree: worktree,
+		Mutex:    &RWMutex{},
 		gitRepo:  gitRepo,
 	}
 
 	return repo, nil
+}
+
+/*
+ Commit a change in the repository
+*/
+func (self *Repository) Commit(reason string) error {
+	_, err := self.Worktree.Commit(
+		reason, &git.CommitOptions{
+			Author: &object.Signature{
+				Name:  "gitbase",
+				Email: "git@gitbase",
+				When:  time.Now(),
+			},
+		})
+	return err
+}
+
+/*
+ Get all collections in the repository
+*/
+func (self *Repository) Collections() []*Collection {
+
+	return nil
+}
+
+func (self *Repository) Add(collection *Collection, reason string) error {
+	return nil
+}
+
+func (self *Repository) Open(name string) (*Collection, error) {
+	return nil, nil
 }
