@@ -11,7 +11,7 @@ func testRepoPath() string {
 	return filepath.Join(os.TempDir(), "gitbase-test-repo")
 }
 
-func TestCanInitialize(t *testing.T) {
+func TestRepositoryCanInitialize(t *testing.T) {
 	path := testRepoPath()
 
 	// This should fail:
@@ -52,6 +52,25 @@ func TestCanInitialize(t *testing.T) {
 	err = repositoryCanInitialize(path)
 	if err != ErrRepositoryPathNotEmpty {
 		t.Error("Expected ErrRepositoryPathNotEmpty, got:", err)
+		return
+	}
+}
+
+func TestRepositoryInitialization(t *testing.T) {
+	path := testRepoPath()
+	defer os.RemoveAll(path) // Clean up afterwards
+
+	_, err := NewRepository(path)
+	if err != nil {
+		t.Error("Could not initialize repo:", err)
+		return
+	}
+
+	// This should work aswell, because the repo should already
+	// be initialized
+	_, err = NewRepository(path)
+	if err != nil {
+		t.Error("Could not open repo:", err)
 		return
 	}
 }
