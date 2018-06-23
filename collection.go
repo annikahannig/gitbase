@@ -1,6 +1,7 @@
 package gitbase
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -16,6 +17,23 @@ type Collection struct {
 	Name string
 
 	repository *Repository
+}
+
+var (
+	ErrCollectionDoesNotExist = errors.New("collection does not exist")
+)
+
+/*
+ Calculate path of collection, derived from
+ Name and the collection's base path
+*/
+func (self *Collection) Path() string {
+	basePath := ""
+	if self.repository != nil {
+		basePath = self.repository.BasePath
+	}
+
+	return filepath.Join(basePath, self.Name)
 }
 
 /*
@@ -51,14 +69,64 @@ func (self *Collection) Destroy(reason string) error {
 }
 
 /*
- Calculate path of collection, derived from
- Name and the collection's base path
+ Create Collection
 */
-func (self *Collection) Path() string {
-	basePath := ""
-	if self.repository != nil {
-		basePath = self.repository.BasePath
+func CreateCollection(
+	repo *Repository,
+	name string,
+	reason string,
+) (*Collection, error) {
+	collection := &Collection{
+		Name:       name,
+		repository: repo,
+	}
+	// Lock repository
+	repo.Lock()
+	defer repo.Unlock()
+
+	// Create filesystem path
+	path := collection.Path()
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		return nil, err
 	}
 
-	return filepath.Join(basePath, self.Name)
+	// Add .gitkeep (for now, to have something to add
+	// to the repo). In future consider creating some
+	// metadata document.
+	gitkeep := filepath.Join(path, ".gitkeep")
+
+	// Consider adding document storage support to
+	// collections.
+
+	// Insert into repository
+	if err = repo.CommitAll(reason); err != nil {
+		return nil, err
+	}
+
+	return collection, nil
+}
+
+/*
+ Open collection in repository
+*/
+func OpenCollection(
+	repo *Repository,
+	name string,
+) (*Collection, error) {
+	collection := &Collection{
+		Name:       name,
+		repository: repo,
+	}
+	path := collection.Path()
+
+	// Check if collection exists
+	fh, err := os.Open(path)
+	if os.IsNotExist(err) {
+		return nil, ErrCollectionDoesNotExist
+	}
+	defer fh.Close()
+
+	// Great, file exists, peachy.
+	return collection, nil
 }

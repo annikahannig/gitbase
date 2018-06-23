@@ -151,6 +151,17 @@ func (self *Repository) Commit(reason string) error {
 }
 
 /*
+ Combined Add + Commit for convenience
+*/
+func (self *Repository) CommitAll(reason string) error {
+	if err := self.StageChanges(); err != nil {
+		return err
+	}
+
+	return self.Commit(reason)
+}
+
+/*
  Get all collections in the repository
 */
 func (self *Repository) Collections() []*Collection {
@@ -161,10 +172,27 @@ func (self *Repository) Collections() []*Collection {
 func (self *Repository) Create(
 	name string, reason string,
 ) (*Collection, error) {
-	log.Println("Creating collection:", name)
-
+	return CreateCollection(self, name, reason)
 }
 
 func (self *Repository) Open(name string) (*Collection, error) {
-	return nil, nil
+	return OpenCollection(self, name)
+}
+
+func (self *Repository) Use(name string) (*Collection, error) {
+
+	// Try to open collection, if that fails
+	collection, err := self.Open(name)
+	if err == ErrCollectionDoesNotExist {
+		// Try to create the collection
+		collection, err = self.Create(
+			name, "automatically created collection",
+		)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return collection, nil
 }
