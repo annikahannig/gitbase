@@ -104,7 +104,10 @@ func CreateCollection(
 	// to the repo). In future consider creating some
 	// metadata document.
 	gitkeep := filepath.Join(path, ".gitkeep")
-	ioutil.WriteFile(gitkeep, []byte{}, 0644)
+	err = ioutil.WriteFile(gitkeep, []byte{}, 0644)
+	if err != nil {
+		return nil, err
+	}
 
 	// Consider adding document storage support to
 	// collections.
