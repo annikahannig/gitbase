@@ -155,19 +155,7 @@ func (self *Collection) Archives() ([]*Archive, error) {
  Calculate next id
 */
 func (self *Collection) NextId() uint64 {
-	archives, err := self.Archives()
-	if err != nil {
-		return 1
-	}
-
-	maxId := uint64(0)
-	for _, archive := range archives {
-		if archive.Id > maxId {
-			maxId = archive.Id
-		}
-	}
-
-	return maxId + 1
+	return NextArchiveId(self)
 }
 
 /*

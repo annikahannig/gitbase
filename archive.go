@@ -56,6 +56,26 @@ func OpenArchive(collection *Collection, id uint64) (*Archive, error) {
 }
 
 /*
+Calculate next archive id
+*/
+func NextArchiveId(collection *Collection) uint64 {
+	archives, err := ListArchives(collection)
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
+
+	maxId := uint64(0)
+	for _, archive := range archives {
+		if archive.Id > maxId {
+			maxId = archive.Id
+		}
+	}
+
+	return maxId + 1
+}
+
+/*
 List Archives
 */
 func ListArchives(collection *Collection) ([]*Archive, error) {
