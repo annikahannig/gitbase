@@ -48,12 +48,21 @@ func (self *Collection) Destroy(reason string) error {
 		reason = "removed " + self.Name
 	}
 
+	path := self.Path()
+
+	// Check if we can remove
+	fh, err := os.Open(path)
+	if err != nil {
+		return ErrCollectionDoesNotExist
+	}
+	defer fh.Close()
+
 	// Disallow write access to repository
 	self.repository.Lock()
 	defer self.repository.Unlock()
 
 	// Remove from filesystem
-	err := os.RemoveAll(self.Path())
+	err = os.RemoveAll(path)
 	if err != nil {
 		return err
 	}

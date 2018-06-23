@@ -186,7 +186,7 @@ func (self *Repository) Use(name string) (*Collection, error) {
 	if err == ErrCollectionDoesNotExist {
 		// Try to create the collection
 		collection, err = self.Create(
-			name, "automatically created collection",
+			name, "automatically created collection on use",
 		)
 
 		if err != nil {
