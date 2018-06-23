@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 /*
@@ -120,7 +121,6 @@ func NewRepository(path string) (*Repository, error) {
 	repo := &Repository{
 		BasePath: path,
 		Worktree: worktree,
-		Mutex:    &RWMutex{},
 		gitRepo:  gitRepo,
 	}
 

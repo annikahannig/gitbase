@@ -2,6 +2,7 @@ package gitbase
 
 import (
 	"errors"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -63,7 +64,7 @@ func (self *Collection) Destroy(reason string) error {
 	}
 
 	// Commit this change
-	err := self.repository.Commit(reason)
+	err = self.repository.Commit(reason)
 
 	return err
 }
@@ -95,6 +96,7 @@ func CreateCollection(
 	// to the repo). In future consider creating some
 	// metadata document.
 	gitkeep := filepath.Join(path, ".gitkeep")
+	ioutil.WriteFile(gitkeep, []byte{}, 0644)
 
 	// Consider adding document storage support to
 	// collections.
