@@ -34,15 +34,13 @@ func (self *Collection) Destroy(reason string) error {
 	defer self.repository.Unlock()
 
 	// Remove from filesystem
-	path := filepath.Join(self.repository.basePath, self.Name)
-	err := os.RemoveAll(path)
+	err := os.RemoveAll(self.Path())
 	if err != nil {
 		return err
 	}
 
 	// Stage this change to git repo
-	_, err := self.repository.Worktree.Add(".")
-	if err != nil {
+	if err = self.repository.StageChanges(); err != nil {
 		return err
 	}
 
@@ -50,4 +48,17 @@ func (self *Collection) Destroy(reason string) error {
 	err := self.repository.Commit(reason)
 
 	return err
+}
+
+/*
+ Calculate path of collection, derived from
+ Name and the collection's base path
+*/
+func (self *Collection) Path() string {
+	basePath := ""
+	if self.repository != nil {
+		basePath = self.repository.BasePath
+	}
+
+	return filepath.Join(basePath, self.Name)
 }

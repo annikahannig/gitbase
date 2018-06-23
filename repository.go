@@ -128,6 +128,14 @@ func NewRepository(path string) (*Repository, error) {
 }
 
 /*
+ Stage changes in repository
+*/
+func (self *Repository) StageChanges() error {
+	_, err := self.Worktree.Add(".")
+	return err
+}
+
+/*
  Commit a change in the repository
 */
 func (self *Repository) Commit(reason string) error {
@@ -150,8 +158,11 @@ func (self *Repository) Collections() []*Collection {
 	return nil
 }
 
-func (self *Repository) Add(collection *Collection, reason string) error {
-	return nil
+func (self *Repository) Create(
+	name string, reason string,
+) (*Collection, error) {
+	log.Println("Creating collection:", name)
+
 }
 
 func (self *Repository) Open(name string) (*Collection, error) {
