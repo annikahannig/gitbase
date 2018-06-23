@@ -14,4 +14,6 @@ func TestCollectionCreateDestroy(t *testing.T) {
 		return
 	}
 
+	// This should fail
+
 }
