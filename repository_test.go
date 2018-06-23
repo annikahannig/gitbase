@@ -74,3 +74,25 @@ func TestRepositoryInitialization(t *testing.T) {
 		return
 	}
 }
+
+func testRepositoryUseCollection(t *testing.T) {
+	path := testRepoPath()
+	defer os.RemoveAll(path) // Clean up afterwards
+
+	repo, err := NewRepository(path)
+	if err != nil {
+		t.Error("Could not initialize repo:", err)
+		return
+	}
+
+	collection, err := repo.Use("test23")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = collection.Destroy("remove this")
+	if err != nil {
+		t.Error(err)
+	}
+
+}
