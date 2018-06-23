@@ -174,5 +174,5 @@ func (self *Collection) NextId() uint64 {
  Find Archive
 */
 func (self *Collection) Find(id uint64) (*Archive, error) {
-	return FindArchive(self, id)
+	return OpenArchive(self, id)
 }

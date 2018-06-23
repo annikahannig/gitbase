@@ -2,7 +2,7 @@ package gitbase
 
 import (
 	"errors"
-	_ "io/ioutil"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -22,7 +22,20 @@ type Archive struct {
 	Collection *Collection
 }
 
-func FindArchive(collection *Collection, id uint64) (*Archive, error) {
+func (self *Archive) Path() string {
+	if self.Collection == nil {
+		return string(self.Id)
+	}
+	path := filepath.Join(self.Collection.Path(), string(self.Id))
+	return path
+}
+
+func ArchivePath(collection *Collection, id uint64) string {
+	path := filepath.Join(collection.Path(), string(id))
+	return path
+}
+
+func OpenArchive(collection *Collection, id uint64) (*Archive, error) {
 	path := collection.Path()
 
 	// Try to open path
@@ -84,12 +97,31 @@ func ListArchives(collection *Collection) ([]*Archive, error) {
 }
 
 /*
-Create a new archive with a new id
+ Create a new archive with a new id
 */
 func CreateArchive(collection *Collection, reason string) (*Archive, error) {
 	nextId := collection.NextId()
+	path := ArchivePath(collection, nextId)
 
-	_ = nextId
+	collection.Repository.Lock()
+	defer collection.Repository.Unlock()
 
-	return nil, nil
+	// Create if not exists
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		return nil, err
+	}
+
+	gitkeep := filepath.Join(path, ".gitkeep")
+	err = ioutil.WriteFile(gitkeep, []byte{}, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	err = collection.Repository.CommitAll(reason)
+	if err != nil {
+		return nil, err
+	}
+
+	return OpenArchive(collection, nextId)
 }
