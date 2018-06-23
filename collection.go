@@ -15,9 +15,8 @@ import (
 */
 
 type Collection struct {
-	Name string
-
-	repository *Repository
+	Name       string
+	Repository *Repository
 }
 
 var (
@@ -30,8 +29,8 @@ var (
 */
 func (self *Collection) Path() string {
 	basePath := ""
-	if self.repository != nil {
-		basePath = self.repository.BasePath
+	if self.Repository != nil {
+		basePath = self.Repository.BasePath
 	}
 
 	return filepath.Join(basePath, self.Name)
@@ -58,8 +57,8 @@ func (self *Collection) Destroy(reason string) error {
 	defer fh.Close()
 
 	// Disallow write access to repository
-	self.repository.Lock()
-	defer self.repository.Unlock()
+	self.Repository.Lock()
+	defer self.Repository.Unlock()
 
 	// Remove from filesystem
 	err = os.RemoveAll(path)
@@ -68,12 +67,12 @@ func (self *Collection) Destroy(reason string) error {
 	}
 
 	// Stage this change to git repo
-	if err = self.repository.StageChanges(); err != nil {
+	if err = self.Repository.StageChanges(); err != nil {
 		return err
 	}
 
 	// Commit this change
-	err = self.repository.Commit(reason)
+	err = self.Repository.Commit(reason)
 
 	return err
 }
@@ -88,7 +87,7 @@ func CreateCollection(
 ) (*Collection, error) {
 	collection := &Collection{
 		Name:       name,
-		repository: repo,
+		Repository: repo,
 	}
 	// Lock repository
 	repo.Lock()
@@ -127,7 +126,7 @@ func OpenCollection(
 ) (*Collection, error) {
 	collection := &Collection{
 		Name:       name,
-		repository: repo,
+		Repository: repo,
 	}
 	path := collection.Path()
 
@@ -140,4 +139,37 @@ func OpenCollection(
 
 	// Great, file exists, peachy.
 	return collection, nil
+}
+
+/*
+ Get all archives
+*/
+func (self *Collection) Archives() ([]*Archive, error) {
+	return ListArchives(self)
+}
+
+/*
+ Calculate next id
+*/
+func (self *Collection) NextId() uint64 {
+	archives, err := self.Archives()
+	if err != nil {
+		return 1
+	}
+
+	maxId := uint64(0)
+	for _, archive := range archives {
+		if archive.Id > maxId {
+			maxId = archive.Id
+		}
+	}
+
+	return maxId + 1
+}
+
+/*
+ Find Archive
+*/
+func (self *Collection) Find(id uint64) (*Archive, error) {
+	return FindArchive(self, id)
 }
