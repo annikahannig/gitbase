@@ -90,6 +90,12 @@ func testRepositoryUseCollection(t *testing.T) {
 		t.Error(err)
 	}
 
+	// Check use of existing repo
+	_, err = repo.Use("test23")
+	if err != nil {
+		t.Error(err)
+	}
+
 	err = collection.Destroy("remove this")
 	if err != nil {
 		t.Error(err)
