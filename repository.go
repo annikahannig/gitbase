@@ -235,6 +235,18 @@ func (self *Repository) Fetch(key string) ([]byte, error) {
 }
 
 /*
+ Fetch a specific version of this document
+*/
+func (self *Repository) FetchRevision(key, rev string) ([]byte, error) {
+	// This is a bit hackish because we are falling
+	// back to the git cli, as this is not (yet) implemented
+	// in go-git. At least as far I could see.
+	// Maybe add this.
+
+	return nil, nil
+}
+
+/*
 Remove a document
 */
 func (self *Repository) Remove(key string, reason string) error {
@@ -254,4 +266,20 @@ func (self *Repository) Remove(key string, reason string) error {
 	// Commit change
 	err = self.CommitAll(reason)
 	return err
+}
+
+/*
+List versions of a given document
+*/
+func (self *Repository) Revisions(key string) ([]string, error) {
+	return []string{}, nil
+}
+
+/*
+Get commit history
+*/
+func (self *Repository) History(key string) ([]*object.Commit, error) {
+	// Again, this is a bit hackish because we are falling
+	// back to the git cli, as go-git does not support git log --follow
+	return []*object.Commit{}, nil
 }
