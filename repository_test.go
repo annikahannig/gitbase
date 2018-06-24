@@ -109,4 +109,17 @@ func TestRepositoryDocumentStorage(t *testing.T) {
 	if string(retrieved) != string(document) {
 		t.Error("Retrieved document differs from added document")
 	}
+
+	// Remove document
+	err = repo.Remove("hello.doc", "not longer required")
+	if err != nil {
+		t.Error(err)
+	}
+
+	// This should fail
+	_, err = repo.Fetch("hello.doc")
+	if err == nil {
+		t.Error("Expected fetch(hello.doc) to fail after removal!")
+	}
+
 }
