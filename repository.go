@@ -1,10 +1,13 @@
 package gitbase
 
 import (
-	"errors"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	_ "io/ioutil"
+
+	"io/ioutil"
+	"path/filepath"
+
+	"errors"
 	"log"
 	"os"
 	"sync"
@@ -195,4 +198,60 @@ func (self *Repository) Use(name string) (*Collection, error) {
 	}
 
 	return collection, nil
+}
+
+/*
+ Document Storage: Put, adds a document to the repo
+*/
+func (self *Repository) Put(key string, document []byte, reason string) error {
+	self.Lock()
+	defer self.Unlock()
+
+	path := filepath.Join(self.BasePath, key)
+
+	err := ioutil.WriteFile(path, document, 0644)
+	if err != nil {
+		return err
+	}
+
+	// Commit to repository
+	err = self.CommitAll(reason)
+	return err
+}
+
+/*
+Fetch a single document
+*/
+func (self *Repository) Fetch(key string) ([]byte, error) {
+	path := filepath.Join(self.BasePath, key)
+	file, err := os.Open(path)
+	if err != nil {
+		return []byte{}, err
+	}
+	defer file.Close()
+
+	document, err := ioutil.ReadAll(file)
+	return document, err
+}
+
+/*
+Remove a document
+*/
+func (self *Repository) Remove(key string, reason string) error {
+	// Derive path
+	path := filepath.Join(self.BasePath, key)
+
+	self.Lock()
+	defer self.Unlock()
+
+	// Remove from filesystem
+	err := os.Remove(path)
+
+	if err != nil {
+		return err
+	}
+
+	// Commit change
+	err = self.CommitAll(reason)
+	return err
 }
