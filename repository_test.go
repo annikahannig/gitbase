@@ -75,30 +75,38 @@ func TestRepositoryInitialization(t *testing.T) {
 	}
 }
 
-func testRepositoryUseCollection(t *testing.T) {
+func TestRepositoryDocumentStorage(t *testing.T) {
 	path := testRepoPath()
-	defer os.RemoveAll(path) // Clean up afterwards
+	defer os.RemoveAll(path)
 
 	repo, err := NewRepository(path)
 	if err != nil {
-		t.Error("Could not initialize repo:", err)
+		t.Error(err)
 		return
 	}
 
-	collection, err := repo.Use("test23")
+	// Okay try to add a simple document
+	document := []byte("Hello World!")
+
+	// This should fail, because it should not exist
+	_, err = repo.Fetch("hello.doc")
+	if err == nil {
+		t.Error("Expected hello.doc to not exit!")
+	}
+
+	// Create our test document
+	err = repo.Put("hello.doc", document, "added test document")
 	if err != nil {
 		t.Error(err)
 	}
 
-	// Check use of existing repo
-	_, err = repo.Use("test23")
+	// Fetch this
+	retrieved, err := repo.Fetch("hello.doc")
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = collection.Destroy("remove this")
-	if err != nil {
-		t.Error(err)
+	if string(retrieved) != string(document) {
+		t.Error("Retrieved document differs from added document")
 	}
-
 }
