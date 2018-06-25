@@ -9,6 +9,7 @@ Update / set location
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -44,13 +45,23 @@ func DatetimeParseOffset(offset string) (*time.Location, error) {
 		locOffset *= -1
 	}
 
+	// As name use UTC+Offset in hours
+	name := fmt.Sprintf("UTC%s%d", sign, h) // TODO: Room for improvement
+
 	// Make location
-	loc := time.FixedZone(offset, locOffset)
+	loc := time.FixedZone(name, locOffset)
 
 	return loc, nil
 }
 
 func DatetimeSetLocation(datetime time.Time, loc *time.Location) time.Time {
-
-	return datetime
+	return time.Date(
+		datetime.Year(),
+		datetime.Month(),
+		datetime.Day(),
+		datetime.Hour(),
+		datetime.Minute(),
+		datetime.Second(),
+		datetime.Nanosecond(),
+		loc)
 }
