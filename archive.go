@@ -150,6 +150,43 @@ func (self *Archive) Documents() ([]string, error) {
 }
 
 /*
+ Remove archive
+*/
+func (self *Archive) Destroy(reason string) error {
+	log.Println("Destroying collection:", self.Name)
+
+	// Fall back to default reason if required
+	if reason == "" {
+		reason = "removed " + self.Name
+	}
+
+	path := filepath.Join(
+		self.Collection.Path(),
+		string(id),
+	)
+
+	fh, err := os.Open(path)
+	if err != nil {
+		return ErrArchiveDoesNotExist
+	}
+	defer fh.Close()
+
+	// Disallow write access to repository
+	self.Collection.Repository.Lock()
+	defer self.Collection.Repository.Unlock()
+
+	// Remove from filesystem
+	err = os.RemoveAll(path)
+	if err != nil {
+		return err
+	}
+
+	// Commit this change
+	err = self.Repository.CommitAll(reason)
+	return err
+}
+
+/*
  Create a new archive with a new id
 */
 func CreateArchive(collection *Collection, reason string) (*Archive, error) {
