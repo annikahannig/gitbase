@@ -153,16 +153,16 @@ func (self *Archive) Documents() ([]string, error) {
  Remove archive
 */
 func (self *Archive) Destroy(reason string) error {
-	log.Println("Destroying collection:", self.Name)
+	log.Println("Destroying archive id:", string(self.Id))
 
 	// Fall back to default reason if required
 	if reason == "" {
-		reason = "removed " + self.Name
+		reason = "removed archive id: " + string(self.Id)
 	}
 
 	path := filepath.Join(
 		self.Collection.Path(),
-		string(id),
+		string(self.Id),
 	)
 
 	fh, err := os.Open(path)
@@ -182,7 +182,7 @@ func (self *Archive) Destroy(reason string) error {
 	}
 
 	// Commit this change
-	err = self.Repository.CommitAll(reason)
+	err = self.Collection.Repository.CommitAll(reason)
 	return err
 }
 
