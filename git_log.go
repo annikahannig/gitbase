@@ -118,6 +118,7 @@ func parseGitLog(data []byte, err error) ([]*Commit, error) {
 				commit = &Commit{}
 			} else {
 				// Next commit
+				commit.Message = strings.TrimSpace(commit.Message)
 				commits = append(commits, commit)
 				commit = &Commit{}
 			}
@@ -166,6 +167,7 @@ func parseGitLog(data []byte, err error) ([]*Commit, error) {
 
 	// Add last commit
 	if commit != nil {
+		commit.Message = strings.TrimSpace(commit.Message)
 		commits = append(commits, commit)
 	}
 
