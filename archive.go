@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"io/ioutil"
 	"path/filepath"
@@ -100,9 +101,13 @@ func ListArchives(collection *Collection) ([]*Archive, error) {
 			continue
 		}
 
+		if strings.HasPrefix(item.Name(), ".") {
+			continue
+		}
+
 		archiveId, err := strconv.ParseUint(item.Name(), 10, 64)
 		if err != nil {
-			log.Println("Found non numeric entry in archives path.")
+			log.Println("Found non numeric entry in archives path:", item.Name())
 			log.Println("Please check if the repository is OK.")
 			continue
 		}
@@ -142,6 +147,10 @@ func (self *Archive) Documents() ([]string, error) {
 
 	for _, item := range items {
 		if item.IsDir() {
+			continue
+		}
+
+		if strings.HasPrefix(item.Name(), ".") {
 			continue
 		}
 
