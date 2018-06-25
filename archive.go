@@ -117,10 +117,43 @@ func ListArchives(collection *Collection) ([]*Archive, error) {
 }
 
 /*
+ List documents
+*/
+func (self *Archive) Documents() ([]string, error) {
+	documents := []string{}
+
+	path := filepath.Join(
+		self.Collection.Path(),
+		string(self.Id),
+	)
+
+	f, err := os.Open(path)
+	if err != nil {
+		return documents, err
+	}
+	defer f.Close()
+
+	items, err := f.Readdir(0)
+	if err != nil {
+		return documents, err
+	}
+
+	for _, item := range items {
+		if item.IsDir() {
+			continue
+		}
+
+		documents = append(documents, item.Name())
+	}
+
+	return documents, nil
+}
+
+/*
  Create a new archive with a new id
 */
 func CreateArchive(collection *Collection, reason string) (*Archive, error) {
-	nextId := collection.NextId()
+	nextId := NextArchiveId(collection)
 	path := ArchivePath(collection, nextId)
 
 	collection.Repository.Lock()
@@ -144,4 +177,56 @@ func CreateArchive(collection *Collection, reason string) (*Archive, error) {
 	}
 
 	return OpenArchive(collection, nextId)
+}
+
+//
+// Wrap document functions
+//
+
+/*
+ Create / Update document, see Repository.Put
+*/
+func (self *Archive) Put(key string, document []byte, reason string) error {
+	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	return self.Collection.Repository.Put(path, document, reason)
+}
+
+/*
+ Remove document, see: Repository.Remove
+*/
+func (self *Archive) Remove(key, reason string) error {
+	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	return self.Collection.Repository.Remove(path, reason)
+}
+
+/*
+ Fetch, see Repository.Fetch
+*/
+func (self *Archive) Fetch(key string) ([]byte, error) {
+	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	return self.Collection.Repository.Fetch(path)
+}
+
+/*
+ Fetch revision, see Repository.FetchRevision
+*/
+func (self *Archive) FetchRevision(key, rev string) ([]byte, error) {
+	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	return self.Collection.Repository.FetchRevision(path, rev)
+}
+
+/*
+ Get commit History, see Repository.History
+*/
+func (self *Archive) History(key string) ([]*Commit, error) {
+	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	return self.Collection.Repository.History(path)
+}
+
+/*
+ Get revisions, see Repository.Revisions
+*/
+func (self *Archive) Revisions(key string) ([]string, error) {
+	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	return self.Collection.Repository.Revisions(path)
 }
