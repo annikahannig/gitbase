@@ -152,13 +152,6 @@ func (self *Collection) Archives() ([]*Archive, error) {
 }
 
 /*
- Calculate next id
-*/
-func (self *Collection) NextId() uint64 {
-	return NextArchiveId(self)
-}
-
-/*
  Find Archive
 */
 func (self *Collection) Find(id uint64) (*Archive, error) {
