@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestExecGitLog(t *testing.T) {
+func TestParseGitLog(t *testing.T) {
 	path := testRepoPath()
 	defer os.RemoveAll(path) // Clean up afterwards
 
@@ -23,6 +23,33 @@ func TestExecGitLog(t *testing.T) {
 	}
 
 	// Exec git log
-	execGitLog(repo.BasePath, ".")
+	commits, err := parseGitLog(execGitLogFollow(repo.BasePath, "."))
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Log(commits)
+}
+
+func TestParseTimestampFromAuthor(t *testing.T) {
+
+	// Timestamp: Mon Jun 25 10:46:52 2018 +0200
+	author := "Matthias Hannig <matthias@hannig.cc> 1529916412 +0200"
+
+	// Expected UTC Timestamp:
+	// 08:46:52 2018 UTC
+	createdAt, err := gitParseTimestampFromAuthor(author)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Log("Timestamp:", createdAt)
+
+	if createdAt.Hour() != 8 &&
+		createdAt.Minute() != 46 &&
+		createdAt.Second() != 52 {
+		t.Error("Expected a different result:", createdAt)
+	}
 
 }
