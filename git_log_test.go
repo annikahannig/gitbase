@@ -65,7 +65,7 @@ func TestParseTimestampFromAuthor(t *testing.T) {
 
 }
 
-func TestIsHash(t *testing.T) {
+func TestParseGitIsHash(t *testing.T) {
 	tests := map[string]bool{
 		"d7585cbdf989fa9ddd810aeb08ee41c11fbca8bb": true,
 		"7da3af6390f7a400c6265f98768ed595bb477b8b": true,
