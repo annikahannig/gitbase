@@ -201,3 +201,7 @@ func gitParseTimestampFromAuthor(line string) (time.Time, error) {
 
 	return createdAt, nil
 }
+
+func GitHistory(basePath, path string) ([]*Commit, error) {
+	return parseGitLog(execGitLogFollow(basePath, path))
+}

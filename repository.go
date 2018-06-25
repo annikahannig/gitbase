@@ -272,14 +272,24 @@ func (self *Repository) Remove(key string, reason string) error {
 List versions of a given document
 */
 func (self *Repository) Revisions(key string) ([]string, error) {
-	return []string{}, nil
+	revisions := []string{}
+	history, err := self.History(key)
+	if err != nil {
+		return revisions, err
+	}
+
+	for _, rev := range history {
+		revisions = append(revisions, rev.Id)
+	}
+
+	return revisions, nil
 }
 
 /*
 Get commit history
 */
-func (self *Repository) History(key string) ([]*object.Commit, error) {
+func (self *Repository) History(key string) ([]*Commit, error) {
 	// Again, this is a bit hackish because we are falling
 	// back to the git cli, as go-git does not support git log --follow
-	return []*object.Commit{}, nil
+	return GitHistory(self.BasePath, key)
 }
