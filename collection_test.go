@@ -2,7 +2,6 @@ package gitbase
 
 import (
 	"os"
-	"path/filepath"
 	"testing"
 )
 

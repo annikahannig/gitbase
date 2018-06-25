@@ -157,3 +157,10 @@ func (self *Collection) Archives() ([]*Archive, error) {
 func (self *Collection) Find(id uint64) (*Archive, error) {
 	return OpenArchive(self, id)
 }
+
+/*
+ Create Archive
+*/
+func (self *Collection) CreateArchive(reason string) (*Archive, error) {
+	return CreateArchive(self, reason)
+}
