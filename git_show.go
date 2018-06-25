@@ -19,3 +19,8 @@ func execGitShow(repoPath, path, revision string) ([]byte, error) {
 
 	return cmd.Output()
 }
+
+// Export
+func GitShow(repoPath, path, revision string) ([]byte, error) {
+	return execGitShow(repoPath, path, revision)
+}

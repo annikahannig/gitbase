@@ -242,8 +242,7 @@ func (self *Repository) FetchRevision(key, rev string) ([]byte, error) {
 	// back to the git cli, as this is not (yet) implemented
 	// in go-git. At least as far I could see.
 	// Maybe add this.
-
-	return nil, nil
+	return GitShow(self.BasePath, key, rev)
 }
 
 /*
