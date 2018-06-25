@@ -50,6 +50,13 @@ func execGitLogFollow(repoPath string, path string) ([]byte, error) {
 	return cmd.Output()
 }
 
+func execGitLog(repoPath string, path string) ([]byte, error) {
+	cmd := exec.Command(
+		"git", "-C", repoPath, "log", "--pretty=raw", path,
+	)
+	return cmd.Output()
+}
+
 /*
 Identify new commit
 */
@@ -205,5 +212,5 @@ func gitParseTimestampFromAuthor(line string) (time.Time, error) {
 }
 
 func GitHistory(basePath, path string) ([]*Commit, error) {
-	return parseGitLog(execGitLogFollow(basePath, path))
+	return parseGitLog(execGitLog(basePath, path))
 }
