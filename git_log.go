@@ -51,10 +51,43 @@ func execGitLogFollow(repoPath string, path string) ([]byte, error) {
 }
 
 /*
+Identify new commit
+*/
+func parseGitIsHeaderStart(line string) bool {
+	tokens := strings.Split(line, " ")
+	if len(tokens) != 2 {
+		return false
+	}
+
+	if tokens[0] != "commit" {
+		return false
+	}
+
+	return parseGitIsHash(tokens[1])
+}
+
+func parseGitIsHash(hash string) bool {
+	sigma := "0123456789abcdef"
+	for _, c := range hash {
+		ok := false
+		for _, t := range sigma {
+			if c == t {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			return false
+		}
+	}
+
+	return true
+}
+
+/*
 Parse command output, interpret error
 */
 func parseGitLog(data []byte, err error) ([]*Commit, error) {
-	log.Println("PARSE_GIT_LOG")
 	commits := []*Commit{}
 	if err != nil {
 		return commits, err
@@ -79,6 +112,19 @@ func parseGitLog(data []byte, err error) ([]*Commit, error) {
 		line := scanner.Text()
 		line = strings.TrimSpace(line)
 
+		if parseGitIsHeaderStart(line) {
+			if commit == nil {
+				// First commit
+				commit = &Commit{}
+			} else {
+				// Next commit
+				commits = append(commits, commit)
+				commit = &Commit{}
+			}
+
+			state = stateHeader
+		}
+
 		if state == stateHeader {
 			tokens := strings.SplitN(line, " ", 2)
 			switch tokens[0] {
@@ -96,19 +142,13 @@ func parseGitLog(data []byte, err error) ([]*Commit, error) {
 				commit.CreatedAt = createdAt
 
 			case "commit":
-				if commit == nil {
-					// First commit
-					commit = &Commit{}
-				} else {
-					// Next commit
-					commits = append(commits, commit)
-					commit = &Commit{}
-				}
-
 				commit.Id = tokens[1]
 				break
 			case "tree":
 				commit.Tree = tokens[1]
+				break
+			case "parent":
+				commit.Parent = tokens[1]
 				break
 			case "author":
 				commit.Author = tokens[1]
