@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	ErrRevsionNotFound = errors.New("revision not found in repository")
+	ErrInvalidRevisionHash = errors.New("invalid revision hash")
+	ErrRevsionNotFound     = errors.New("revision not found in repository")
 )
 
 func execGitShow(repoPath, path, revision string) ([]byte, error) {
@@ -22,5 +23,8 @@ func execGitShow(repoPath, path, revision string) ([]byte, error) {
 
 // Export
 func GitShow(repoPath, path, revision string) ([]byte, error) {
+	if !parseGitIsHash(revision) {
+		return nil, ErrInvalidRevisionHash
+	}
 	return execGitShow(repoPath, path, revision)
 }
