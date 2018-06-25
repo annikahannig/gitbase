@@ -40,6 +40,50 @@ func TestNextArchiveId(t *testing.T) {
 	}
 }
 
+func TestArchiveCreateDestroy(t *testing.T) {
+	path := testRepoPath()
+	defer os.RemoveAll(path) // Clean up afterwards
+
+	repo, err := NewRepository(path)
+	if err != nil {
+		t.Error("Could not initialize repo:", err)
+		return
+	}
+
+	collection, err := repo.Use("fnord")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	archive1, err := collection.NextArchive("make test archive")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	archive2, err := collection.NextArchive("make another test archive")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = archive1.Destroy("not required anymore")
+	if err != nil {
+		t.Error(err)
+	}
+
+	ret, err := collection.Find(2)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if ret.Id != archive2.Id {
+		t.Error("Expected retrieved archive id to be 2, got:", ret.Id)
+	}
+
+}
+
 func TestArchiveDocumentHandling(t *testing.T) {
 	path := testRepoPath()
 	defer os.RemoveAll(path) // Clean up afterwards
@@ -55,7 +99,7 @@ func TestArchiveDocumentHandling(t *testing.T) {
 		t.Error(err)
 	}
 
-	archive, err := collection.CreateArchive("new test archive")
+	archive, err := collection.NextArchive("new test archive")
 	if err != nil {
 		t.Error(err)
 	}

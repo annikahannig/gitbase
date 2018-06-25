@@ -2,11 +2,13 @@ package gitbase
 
 import (
 	"errors"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"strconv"
+
+	"io/ioutil"
+	"path/filepath"
 )
 
 var (
@@ -24,14 +26,14 @@ type Archive struct {
 
 func (self *Archive) Path() string {
 	if self.Collection == nil {
-		return string(self.Id)
+		return fmt.Sprintf("%d", self.Id)
 	}
 	path := filepath.Join(self.Collection.Path(), string(self.Id))
 	return path
 }
 
 func ArchivePath(collection *Collection, id uint64) string {
-	path := filepath.Join(collection.Path(), string(id))
+	path := filepath.Join(collection.Path(), fmt.Sprintf("%d", id))
 	return path
 }
 
@@ -39,7 +41,7 @@ func OpenArchive(collection *Collection, id uint64) (*Archive, error) {
 	path := collection.Path()
 
 	// Try to open path
-	archivePath := filepath.Join(path, string(id))
+	archivePath := filepath.Join(path, fmt.Sprintf("%d", id))
 
 	fh, err := os.Open(archivePath)
 	if err != nil {
@@ -124,7 +126,7 @@ func (self *Archive) Documents() ([]string, error) {
 
 	path := filepath.Join(
 		self.Collection.Path(),
-		string(self.Id),
+		fmt.Sprintf("%d", self.Id),
 	)
 
 	f, err := os.Open(path)
@@ -153,16 +155,16 @@ func (self *Archive) Documents() ([]string, error) {
  Remove archive
 */
 func (self *Archive) Destroy(reason string) error {
-	log.Println("Destroying archive id:", string(self.Id))
+	log.Println("Destroying archive id:", fmt.Sprintf("%d", self.Id))
 
 	// Fall back to default reason if required
 	if reason == "" {
-		reason = "removed archive id: " + string(self.Id)
+		reason = "removed archive id: " + fmt.Sprintf("%d", self.Id)
 	}
 
 	path := filepath.Join(
 		self.Collection.Path(),
-		string(self.Id),
+		fmt.Sprintf("%d", self.Id),
 	)
 
 	fh, err := os.Open(path)
@@ -189,7 +191,7 @@ func (self *Archive) Destroy(reason string) error {
 /*
  Create a new archive with a new id
 */
-func CreateArchive(collection *Collection, reason string) (*Archive, error) {
+func NextArchive(collection *Collection, reason string) (*Archive, error) {
 	nextId := NextArchiveId(collection)
 	path := ArchivePath(collection, nextId)
 
@@ -216,6 +218,9 @@ func CreateArchive(collection *Collection, reason string) (*Archive, error) {
 	return OpenArchive(collection, nextId)
 }
 
+// Alias
+var CreateArchive = NextArchive
+
 //
 // Wrap document functions
 //
@@ -224,7 +229,7 @@ func CreateArchive(collection *Collection, reason string) (*Archive, error) {
  Create / Update document, see Repository.Put
 */
 func (self *Archive) Put(key string, document []byte, reason string) error {
-	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	path := filepath.Join(self.Collection.Name, fmt.Sprintf("%d", self.Id), key)
 	return self.Collection.Repository.Put(path, document, reason)
 }
 
@@ -232,7 +237,7 @@ func (self *Archive) Put(key string, document []byte, reason string) error {
  Remove document, see: Repository.Remove
 */
 func (self *Archive) Remove(key, reason string) error {
-	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	path := filepath.Join(self.Collection.Name, fmt.Sprintf("%d", self.Id), key)
 	return self.Collection.Repository.Remove(path, reason)
 }
 
@@ -240,7 +245,7 @@ func (self *Archive) Remove(key, reason string) error {
  Fetch, see Repository.Fetch
 */
 func (self *Archive) Fetch(key string) ([]byte, error) {
-	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	path := filepath.Join(self.Collection.Name, fmt.Sprintf("%d", self.Id), key)
 	return self.Collection.Repository.Fetch(path)
 }
 
@@ -248,7 +253,7 @@ func (self *Archive) Fetch(key string) ([]byte, error) {
  Fetch revision, see Repository.FetchRevision
 */
 func (self *Archive) FetchRevision(key, rev string) ([]byte, error) {
-	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	path := filepath.Join(self.Collection.Name, fmt.Sprintf("%d", self.Id), key)
 	return self.Collection.Repository.FetchRevision(path, rev)
 }
 
@@ -256,7 +261,7 @@ func (self *Archive) FetchRevision(key, rev string) ([]byte, error) {
  Get commit History, see Repository.History
 */
 func (self *Archive) History(key string) ([]*Commit, error) {
-	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	path := filepath.Join(self.Collection.Name, fmt.Sprintf("%d", self.Id), key)
 	return self.Collection.Repository.History(path)
 }
 
@@ -264,6 +269,6 @@ func (self *Archive) History(key string) ([]*Commit, error) {
  Get revisions, see Repository.Revisions
 */
 func (self *Archive) Revisions(key string) ([]string, error) {
-	path := filepath.Join(self.Collection.Name, string(self.Id), key)
+	path := filepath.Join(self.Collection.Name, fmt.Sprintf("%d", self.Id), key)
 	return self.Collection.Repository.Revisions(path)
 }

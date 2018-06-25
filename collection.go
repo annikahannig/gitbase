@@ -159,8 +159,8 @@ func (self *Collection) Find(id uint64) (*Archive, error) {
 }
 
 /*
- Create Archive
+ Create a new Archive
 */
-func (self *Collection) CreateArchive(reason string) (*Archive, error) {
-	return CreateArchive(self, reason)
+func (self *Collection) NextArchive(reason string) (*Archive, error) {
+	return NextArchive(self, reason)
 }
